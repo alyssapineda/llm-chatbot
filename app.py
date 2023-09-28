@@ -59,6 +59,8 @@ if st.session_state.messages[-1]["role"] != "assistant":
             #Execute SQL query and store results in message dictionary
             message["results"] = conn.query(sql)
             #display query results in Streamlit DataFrame
-            st.dataframe(message["results"])
+
+            #st.dataframe(message["results"])
+            
         #Append assistant message including sql results to session's message history
         st.session_state.messages.append(message)
