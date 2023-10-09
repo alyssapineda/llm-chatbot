@@ -13,6 +13,11 @@ if "messages" not in st.session_state:
     # a welcome message to the user.
     st.session_state.messages = [{"role": "system", "content": get_system_prompt()}]
 
+# Print system prompt - create expandable container
+with st.expander("System Prompt:", expanded=True):
+    #retrieves content of the first message in the st.session_state.messages which contains the system prompt
+    st.write(st.session_state.messages[0]["content"])
+
 # Prompt for user input and save
 if prompt := st.chat_input():
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -21,6 +26,7 @@ if prompt := st.chat_input():
 for message in st.session_state.messages:
     #if message is from system, skips the current iteration of the loop, system messages are not displayed
     if message["role"] == "system":
+        
         continue
     #set role for subsequent text or data display within UI
     with st.chat_message(message["role"]):
@@ -50,17 +56,18 @@ if st.session_state.messages[-1]["role"] != "assistant":
 
         #Create message dictionary for assistant's response
         message = {"role": "assistant", "content": response}
-        # Parse the response for a SQL query and execute if available
+        # Extract the sql code using regex and execute if available
         sql_match = re.search(r"```sql\n(.*)\n```", response, re.DOTALL)
         if sql_match:
             # Extract the SQL query from the matched pattern
             sql = sql_match.group(1)
+            #establish connection to snowflake DB
             conn = st.experimental_connection("snowpark")
-            #Execute SQL query and store results in message dictionary
+            #send query to snowflake store results in message dictionary
             message["results"] = conn.query(sql)
             #display query results in Streamlit DataFrame
 
-            #st.dataframe(message["results"])
+            st.dataframe(message["results"])
             
         #Append assistant message including sql results to session's message history
         st.session_state.messages.append(message)
